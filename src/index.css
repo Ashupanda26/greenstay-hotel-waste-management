@@ -1,0 +1,26 @@
+@import "tailwindcss";
+
+/* Design tokens: usable as Tailwind utilities, e.g. bg-forest, text-ink, font-display */
+@theme {
+  --color-forest: #1f3d2b;
+  --color-moss: #4f7a4a;
+  --color-sage: #9cc48f;
+  --color-mist: #eef2ec;
+  --color-ink: #1a211c;
+  --color-signal: #c8871e;
+
+  --font-display: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Atkinson Hyperlegible", ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  html {
+    @apply bg-mist text-ink antialiased;
+  }
+  h1, h2, h3 {
+    @apply font-display tracking-tight;
+  }
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-moss;
+  }
+}
