@@ -7,6 +7,7 @@ import Icon from '../../components/ui/Icon'
 import StateMessage from '../../components/ui/StateMessage'
 import StatusSteps from '../../components/ui/StatusSteps'
 import { buttonClass, textLinkClass } from '../../components/ui/styles'
+import { binFillLevelFor } from '../../lib/businessRules'
 import { formatDate, formatDateTime, formatRequestReference } from '../../lib/format'
 import { getRequestDetails, type WasteRequestDetails } from '../../lib/queries/wasteRequests'
 import { useAsyncData } from '../../lib/useAsyncData'
@@ -114,12 +115,8 @@ export default function RequestDetailsPage() {
               <Detail label="Waste type">{r.waste_type}</Detail>
               <Detail label="Classification">{r.waste_classification}</Detail>
               <Detail label="Bin fill level">
-                <span className="flex items-center gap-3">
-                  <span className="font-semibold tabular-nums">{r.bin_level}%</span>
-                  <span aria-hidden="true" className="h-2 w-32 overflow-hidden rounded-full bg-canvas ring-1 ring-line">
-                    <span className="block h-full rounded-full bg-brand-600" style={{ width: `${r.bin_level}%` }} />
-                  </span>
-                </span>
+                {binFillLevelFor(r.bin_level).value}
+                <span className="text-muted"> · {binFillLevelFor(r.bin_level).range}</span>
               </Detail>
               <Detail label="Priority">
                 <PriorityBadge priority={r.priority} />

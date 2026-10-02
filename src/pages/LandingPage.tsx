@@ -15,15 +15,15 @@ const lifecycle: { icon: IconName; title: string; detail: string }[] = [
 
 const steps: { number: string; icon: IconName; title: string; points: string[] }[] = [
   { number: '01', icon: 'report', title: 'Report waste', points: ['Location', 'Waste type', 'Recyclable or not', 'Bin fill level'] },
-  { number: '02', icon: 'flag', title: 'Prioritise', points: ['0–49% → Low', '50–89% → Medium', '90–100% → High'] },
+  { number: '02', icon: 'flag', title: 'Prioritise', points: ['Low · 0–25% → Low', 'Medium · 25–75% → Medium', 'High · 75–100% → High'] },
   { number: '03', icon: 'truck', title: 'Manage collection', points: ['Review requests', 'Assign a collector', 'Schedule and start', 'Complete or cancel'] },
   { number: '04', icon: 'analytics', title: 'Analyse', points: ['Reporting trends', 'Types and locations', 'Priorities', 'Collection status'] },
 ]
 
 const priorityChips = [
-  { label: 'Low', range: '0–49%', className: 'bg-brand-50 text-brand-700 ring-brand-200' },
-  { label: 'Medium', range: '50–89%', className: 'bg-warning-50 text-warning-700 ring-warning-200' },
-  { label: 'High', range: '90–100%', className: 'bg-danger-50 text-danger-700 ring-danger-200' },
+  { label: 'Low', range: '0–25%', className: 'bg-brand-50 text-brand-700 ring-brand-200' },
+  { label: 'Medium', range: '25–75%', className: 'bg-warning-50 text-warning-700 ring-warning-200' },
+  { label: 'High', range: '75–100%', className: 'bg-danger-50 text-danger-700 ring-danger-200' },
 ]
 
 export default function LandingPage() {
@@ -89,7 +89,7 @@ function Hero() {
                   <div className="mt-2 flex flex-wrap gap-1.5">
                     {priorityChips.map((chip) => (
                       <span key={chip.label} className={`rounded-full px-2 py-0.5 text-xs font-semibold ring-1 ring-inset ${chip.className}`}>
-                        {chip.label} {chip.range}
+                        {chip.label} · {chip.range}
                       </span>
                     ))}
                   </div>

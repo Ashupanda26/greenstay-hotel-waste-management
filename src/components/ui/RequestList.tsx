@@ -1,5 +1,6 @@
 import type { MouseEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { binFillLevelFor } from '../../lib/businessRules'
 import { formatDateTime, formatRequestReference } from '../../lib/format'
 import type { Location, User, WasteRequest } from '../../types/database'
 import { PriorityBadge, StatusBadge } from './Badges'
@@ -56,7 +57,7 @@ export default function RequestList({
               <th scope="col" className="px-4 py-3">Reference</th>
               <th scope="col" className="px-4 py-3">Location</th>
               <th scope="col" className="px-4 py-3">Waste</th>
-              {showBinLevel && <th scope="col" className="px-4 py-3 text-right">Bin</th>}
+              {showBinLevel && <th scope="col" className="px-4 py-3">Fill level</th>}
               <th scope="col" className="px-4 py-3">Priority</th>
               <th scope="col" className="px-4 py-3">Status</th>
               <th scope="col" className="px-4 py-3">Reported</th>
@@ -82,7 +83,12 @@ export default function RequestList({
                   {r.waste_type}
                   {showClassification && <span className="block text-xs text-muted">{r.waste_classification}</span>}
                 </td>
-                {showBinLevel && <td className="px-4 py-3.5 text-right tabular-nums">{r.bin_level}%</td>}
+                {showBinLevel && (
+                  <td className="px-4 py-3.5 whitespace-nowrap">
+                    {binFillLevelFor(r.bin_level).value}
+                    <span className="block text-xs text-muted">{binFillLevelFor(r.bin_level).range}</span>
+                  </td>
+                )}
                 <td className="px-4 py-3.5">
                   <PriorityBadge priority={r.priority} />
                 </td>
@@ -114,7 +120,7 @@ export default function RequestList({
               <p className="mt-0.5 text-sm text-muted">
                 {r.waste_type}
                 {showClassification && ` · ${r.waste_classification}`}
-                {showBinLevel && ` · ${r.bin_level}% full`}
+                {showBinLevel && ` · Fill level ${binFillLevelFor(r.bin_level).value} · ${binFillLevelFor(r.bin_level).range}`}
                 {showReporter && r.reporter && ` · by ${r.reporter.name}`}
               </p>
               <div className="mt-3 flex items-center justify-between gap-2">

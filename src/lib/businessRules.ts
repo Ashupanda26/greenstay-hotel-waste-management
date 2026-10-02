@@ -1,11 +1,38 @@
 import type { Collection, Priority, RequestStatus } from '../types/database.ts'
 
 /**
- * Priority rule: a request's default priority comes from how full the bin is.
+ * Bin fill levels. Staff choose a category, not an exact percentage. Each
+ * category is stored in the existing bin_level column as a representative
+ * value, so stored values are categories, not measurements.
+ */
+export const BIN_FILL_LEVELS = [
+  { value: 'Low', range: '0–25%', binLevel: 25 },
+  { value: 'Medium', range: '25–75%', binLevel: 50 },
+  { value: 'High', range: '75–100%', binLevel: 100 },
+] as const
+
+export type BinFillLevel = (typeof BIN_FILL_LEVELS)[number]
+
+/**
+ * The fill-level category for a stored bin_level, for display. Representative
+ * values map back to their category; any other value falls into the range that
+ * contains it: up to 25 Low, up to 75 Medium, above 75 High.
+ */
+export function binFillLevelFor(binLevel: number): BinFillLevel {
+  if (binLevel <= 25) return BIN_FILL_LEVELS[0]
+  if (binLevel <= 75) return BIN_FILL_LEVELS[1]
+  return BIN_FILL_LEVELS[2]
+}
+
+/**
+ * Priority rule: a request's default priority comes from the stored bin_level.
  *
- *   bin level  0-49  -> Low
- *   bin level 50-89  -> Medium
- *   bin level 90-100 -> High
+ *   bin_level  0-49  -> Low
+ *   bin_level 50-89  -> Medium
+ *   bin_level 90-100 -> High
+ *
+ * With the fill-level categories above this gives Low -> Low, Medium -> Medium
+ * and High -> High.
  *
  * Staff never choose priority. The app calls this when a request is reported
  * and stores the result. A Waste Manager may later override the stored
@@ -15,7 +42,7 @@ import type { Collection, Priority, RequestStatus } from '../types/database.ts'
  * This is the only place the rule lives. Use this function rather than
  * repeating the thresholds in components.
  *
- * @param binLevel Bin fullness as a whole-number percentage, 0-100.
+ * @param binLevel The stored bin_level, a whole number from 0 to 100.
  * @throws RangeError if binLevel is not a whole number from 0 to 100.
  */
 export function calculatePriority(binLevel: number): Priority {

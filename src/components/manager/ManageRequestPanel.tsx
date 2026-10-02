@@ -2,6 +2,7 @@ import { useRef, useState, type ReactNode } from 'react'
 import Icon, { type IconName } from '../ui/Icon'
 import { buttonClass, fieldErrorClass, inputClass, labelClass, textLinkClass } from '../ui/styles'
 import {
+  binFillLevelFor,
   calculatePriority,
   canAssignRequest,
   canCancelCollection,
@@ -251,7 +252,8 @@ export default function ManageRequestPanel({ request, onChanged }: ManageRequest
           {canChangePriority(request.status) && (
             <Action icon="flag" title="Priority override">
               <p className="text-sm text-muted">
-                Calculated from the {request.bin_level}% bin level: <strong className="text-ink">{calculated}</strong>.
+                Calculated from the bin fill level ({binFillLevelFor(request.bin_level).value} ·{' '}
+                {binFillLevelFor(request.bin_level).range}): <strong className="text-ink">{calculated}</strong>.
               </p>
               <label htmlFor="priority" className={`mt-3 ${labelClass}`}>
                 Priority

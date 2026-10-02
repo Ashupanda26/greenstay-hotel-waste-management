@@ -4,7 +4,7 @@ import Icon, { type IconName } from '../../components/ui/Icon'
 import PageHeader from '../../components/ui/PageHeader'
 import StateMessage from '../../components/ui/StateMessage'
 import { buttonClass, fieldErrorClass, inputClass, labelClass, textLinkClass } from '../../components/ui/styles'
-import { calculatePriority } from '../../lib/businessRules'
+import { BIN_FILL_LEVELS, calculatePriority, type BinFillLevel } from '../../lib/businessRules'
 import { useDemoStaff } from '../../lib/demoStaff'
 import { formatRequestReference } from '../../lib/format'
 import { listLocations } from '../../lib/queries/locations'
@@ -23,47 +23,36 @@ type FormValues = {
   locationId: string
   wasteType: WasteType | ''
   classification: WasteClassification | ''
-  /** Kept as text so a half-typed or empty value can be shown and validated. */
-  binLevel: string
+  fillLevel: FillLevel | ''
   description: string
 }
 
-type FieldErrors = Partial<Record<'locationId' | 'wasteType' | 'classification' | 'binLevel', string>>
+type FieldErrors = Partial<Record<'locationId' | 'wasteType' | 'classification' | 'fillLevel', string>>
 
-const emptyForm: FormValues = { locationId: '', wasteType: '', classification: '', binLevel: '', description: '' }
+const emptyForm: FormValues = { locationId: '', wasteType: '', classification: '', fillLevel: '', description: '' }
 
 const classificationOptions: Record<WasteClassification, { hint: string; icon: IconName }> = {
   Recyclable: { hint: 'Paper, cardboard, plastic, glass and other recyclable materials', icon: 'recycle' },
   'Non-Recyclable': { hint: 'Food waste, general waste and anything that cannot be recycled', icon: 'trash' },
 }
 
-const priorityStyles: Record<Priority, { box: string; bar: string }> = {
-  High: { box: 'border-danger-200 bg-danger-50 text-danger-700', bar: 'bg-danger-500' },
-  Medium: { box: 'border-warning-200 bg-warning-50 text-warning-700', bar: 'bg-warning-500' },
-  Low: { box: 'border-brand-200 bg-brand-50 text-brand-700', bar: 'bg-brand-500' },
+const priorityStyles: Record<Priority, string> = {
+  High: 'border-danger-200 bg-danger-50 text-danger-700',
+  Medium: 'border-warning-200 bg-warning-50 text-warning-700',
+  Low: 'border-brand-200 bg-brand-50 text-brand-700',
 }
 
-/** The priority bands shown under the slider (widths match 0–49, 50–89, 90–100). */
-const priorityBands: { priority: Priority; range: string; width: string }[] = [
-  { priority: 'Low', range: '0–49%', width: 'w-1/2' },
-  { priority: 'Medium', range: '50–89%', width: 'w-2/5' },
-  { priority: 'High', range: '90–100%', width: 'w-1/10' },
-]
-
-/** A whole number from 0 to 100, or null if the text isn't one. */
-function parseBinLevel(text: string): number | null {
-  if (text.trim() === '') return null
-  const value = Number(text)
-  return Number.isInteger(value) && value >= 0 && value <= 100 ? value : null
-}
+// Staff choose a fill-level category; its representative value is stored in
+// bin_level and priority is calculated from it (see BIN_FILL_LEVELS in businessRules.ts).
+const fillLevels = BIN_FILL_LEVELS
+type FillLevel = BinFillLevel['value']
 
 function validate(values: FormValues): FieldErrors {
   const errors: FieldErrors = {}
   if (!values.locationId) errors.locationId = 'Choose the location of the bin.'
   if (!values.wasteType) errors.wasteType = 'Choose the type of waste.'
   if (!values.classification) errors.classification = 'Choose whether the waste is recyclable.'
-  if (values.binLevel.trim() === '') errors.binLevel = 'Set how full the bin is.'
-  else if (parseBinLevel(values.binLevel) === null) errors.binLevel = 'Enter a whole number from 0 to 100.'
+  if (!values.fillLevel) errors.fillLevel = 'Choose how full the bin is.'
   return errors
 }
 
@@ -79,7 +68,8 @@ export default function ReportWastePage() {
   const formRef = useRef<HTMLFormElement>(null)
 
   const errors = showErrors ? validate(values) : {}
-  const binLevel = parseBinLevel(values.binLevel)
+  const fillLevel = fillLevels.find((option) => option.value === values.fillLevel) ?? null
+  const binLevel = fillLevel?.binLevel ?? null
   const priority = binLevel === null ? null : calculatePriority(binLevel)
   const locationName =
     locations.status === 'success' ? locations.data.find((l) => l.id === values.locationId)?.name : undefined
@@ -289,61 +279,38 @@ export default function ReportWastePage() {
           </FormSection>
 
           <FormSection number={3} title="Bin fill level" icon="gauge">
-            <div className="flex flex-wrap items-end justify-between gap-4">
-              <div>
-                <label htmlFor="bin-level" className={labelClass}>
-                  How full is the bin?
-                </label>
-                <p className="mt-1 text-sm text-muted">Drag the slider or type a percentage.</p>
+            <fieldset aria-describedby={errors.fillLevel ? 'fill-level-hint fill-level-error' : 'fill-level-hint'}>
+              <legend className={labelClass}>How full is the bin?</legend>
+              <div className="mt-2 grid gap-2">
+                {fillLevels.map((option) => (
+                  <label
+                    key={option.value}
+                    className={[
+                      'flex cursor-pointer items-center gap-3 rounded-xl border bg-surface px-4 py-2.5 transition-colors',
+                      'hover:border-brand-500 has-checked:border-brand-600 has-checked:bg-brand-50 has-checked:ring-1 has-checked:ring-brand-600',
+                      'has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-brand-600',
+                      errors.fillLevel ? 'border-danger-500' : 'border-line-strong',
+                    ].join(' ')}
+                  >
+                    <input
+                      type="radio"
+                      name="fillLevel"
+                      value={option.value}
+                      checked={values.fillLevel === option.value}
+                      onChange={() => update('fillLevel', option.value)}
+                      aria-invalid={!!errors.fillLevel}
+                      className="size-4 accent-brand-600 focus-visible:outline-none"
+                    />
+                    <span className="font-semibold">{option.value}</span>
+                    <span className="ml-auto text-sm whitespace-nowrap text-muted tabular-nums">{option.range}</span>
+                  </label>
+                ))}
               </div>
-              <div className="flex items-baseline gap-1">
-                <input
-                  id="bin-level-number"
-                  type="number"
-                  inputMode="numeric"
-                  min={0}
-                  max={100}
-                  step={1}
-                  value={values.binLevel}
-                  placeholder="–"
-                  onChange={(event) => update('binLevel', event.target.value)}
-                  aria-label="Bin fill level, percent"
-                  aria-invalid={!!errors.binLevel}
-                  aria-describedby={errors.binLevel ? 'bin-level-error' : undefined}
-                  className="w-24 rounded-lg border border-line-strong bg-surface px-2 py-1 text-right font-display text-3xl font-bold tabular-nums shadow-card aria-invalid:border-danger-500"
-                />
-                <span aria-hidden="true" className="font-display text-2xl font-bold text-muted">
-                  %
-                </span>
-              </div>
-            </div>
-
-            <input
-              id="bin-level"
-              type="range"
-              min={0}
-              max={100}
-              step={1}
-              value={binLevel ?? 0}
-              onChange={(event) => update('binLevel', event.target.value)}
-              aria-valuetext={binLevel === null ? 'Not set' : `${binLevel}%`}
-              aria-invalid={!!errors.binLevel}
-              aria-describedby={errors.binLevel ? 'bin-level-error' : undefined}
-              className="mt-5 block h-7 w-full cursor-pointer accent-brand-600"
-            />
-            <div aria-hidden="true" className="mt-2 flex gap-0.5">
-              {priorityBands.map((band) => (
-                <div key={band.priority} className={band.width}>
-                  <div
-                    className={`h-1.5 rounded-full ${priority === band.priority ? priorityStyles[band.priority].bar : 'bg-line'}`}
-                  />
-                  <p className={`mt-1 truncate text-[11px] ${priority === band.priority ? 'font-semibold text-ink' : 'text-muted'}`}>
-                    {band.priority} {band.range}
-                  </p>
-                </div>
-              ))}
-            </div>
-            {errors.binLevel && <FieldError id="bin-level-error">{errors.binLevel}</FieldError>}
+              <p id="fill-level-hint" className="mt-2 text-sm text-muted">
+                Select the option that best matches how full the bin is.
+              </p>
+              {errors.fillLevel && <FieldError id="fill-level-error">{errors.fillLevel}</FieldError>}
+            </fieldset>
           </FormSection>
         </div>
 
@@ -360,12 +327,14 @@ export default function ReportWastePage() {
               aria-live="polite"
               className={[
                 'mt-4 rounded-xl border p-4 text-center',
-                priority ? priorityStyles[priority].box : 'border-dashed border-line-strong bg-canvas text-muted',
+                priority ? priorityStyles[priority] : 'border-dashed border-line-strong bg-canvas text-muted',
               ].join(' ')}
             >
               {priority ? (
                 <>
-                  <p className="text-xs font-semibold tracking-wider uppercase opacity-80">Bin fill level {binLevel}%</p>
+                  <p className="text-xs font-semibold tracking-wider uppercase opacity-80">
+                    Bin fill level {fillLevel?.value} · {fillLevel?.range}
+                  </p>
                   <p className="mt-2 flex items-center justify-center gap-2 font-display text-3xl font-bold tracking-wide uppercase">
                     <Icon name="flag" className="size-6" />
                     {priority}
@@ -373,10 +342,10 @@ export default function ReportWastePage() {
                   <p className="text-xs font-semibold tracking-wider uppercase">priority</p>
                 </>
               ) : (
-                <p className="text-sm">Set the bin fill level to calculate priority.</p>
+                <p className="text-sm">Choose the bin fill level to calculate priority.</p>
               )}
             </div>
-            <p className="mt-3 text-xs text-muted">Calculated automatically: 0–49% Low, 50–89% Medium, 90–100% High.</p>
+            <p className="mt-3 text-xs text-muted">Calculated automatically from the bin fill level.</p>
           </section>
 
           <section aria-label="Summary and submit" className="rounded-xl border border-line bg-surface p-5 shadow-card">

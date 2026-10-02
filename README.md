@@ -96,13 +96,15 @@ To set up a Supabase project, run the three files in that order in the Supabase 
 Tables: `users`, `locations`, `waste_requests` (belongs to a location and the reporting user) and `collections` (belongs to a request and the assigned user). Allowed values are enforced with CHECK constraints and mirrored in `src/types/database.ts`.
 
 ### Priority rule
-Staff do not choose priority. When waste is reported, the app sets it from the bin level using `calculatePriority` in `src/lib/businessRules.ts`:
+Staff do not choose priority. They choose a **bin fill level category**, and the app sets the priority from it:
 
-| Bin level | Priority |
-| --- | --- |
-| 0–49% | Low |
-| 50–89% | Medium |
-| 90–100% | High |
+| Fill level (shown to staff) | Stored `bin_level` | Priority |
+| --- | --- | --- |
+| Low · 0–25% | 25 | Low |
+| Medium · 25–75% | 50 | Medium |
+| High · 75–100% | 100 | High |
+
+The stored `bin_level` is a representative value for the chosen category, not a measured percentage, so the app displays it as the category and its range. Priority is calculated from the stored value by `calculatePriority` in `src/lib/businessRules.ts` (0–49 Low, 50–89 Medium, 90–100 High).
 
 This is the *default* priority. A Waste Manager may override it later, so the database only checks that priority is Low, Medium or High and does not tie it to the bin level.
 
