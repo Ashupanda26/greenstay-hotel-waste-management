@@ -1,26 +1,65 @@
 @import "tailwindcss";
 
-/* Design tokens: usable as Tailwind utilities, e.g. bg-forest, text-ink, font-display */
+/*
+ * GreenStay design tokens. Use them as Tailwind utilities, e.g. bg-brand-600,
+ * text-muted, border-line, shadow-card, font-display.
+ *
+ * Green is reserved for the brand, primary actions and positive states.
+ * Most surfaces are neutral.
+ */
 @theme {
-  --color-forest: #1f3d2b;
-  --color-moss: #4f7a4a;
-  --color-sage: #9cc48f;
-  --color-mist: #eef2ec;
-  --color-ink: #1a211c;
-  --color-signal: #c8871e;
+  /* Brand */
+  --color-brand-50: #eef6f0;
+  --color-brand-100: #d9ecdf;
+  --color-brand-200: #b5d8bf;
+  --color-brand-500: #3f8a5c;
+  --color-brand-600: #2f7049; /* primary actions; 5.9:1 on white */
+  --color-brand-700: #245a3a;
+  --color-brand-900: #14321f;
+
+  /* Neutrals */
+  --color-canvas: #f6f7f5; /* page background */
+  --color-surface: #ffffff; /* cards */
+  --color-line: #e3e7e2; /* borders */
+  --color-line-strong: #c9d1c7; /* inputs */
+  --color-ink: #16201a; /* body text */
+  --color-muted: #566259; /* secondary text; 6.2:1 on white */
+
+  /* States */
+  --color-warning-50: #fdf5e6;
+  --color-warning-200: #f2d9a6;
+  --color-warning-500: #d08a17;
+  --color-warning-700: #8a5300;
+  --color-danger-50: #fdf0ee;
+  --color-danger-200: #f4c7c1;
+  --color-danger-500: #d6453a;
+  --color-danger-700: #a3261d;
+  --color-info-50: #eef4fb;
+  --color-info-200: #c9dbef;
+  --color-info-700: #2c5884;
 
   --font-display: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
-  --font-sans: "Atkinson Hyperlegible", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --shadow-card: 0 1px 2px rgb(22 32 26 / 0.04), 0 1px 3px rgb(22 32 26 / 0.06);
+  --shadow-raised: 0 4px 12px -2px rgb(22 32 26 / 0.08), 0 2px 4px -2px rgb(22 32 26 / 0.06);
 }
 
 @layer base {
   html {
-    @apply bg-mist text-ink antialiased;
+    @apply bg-canvas text-ink antialiased;
+    font-feature-settings: "cv11", "ss01";
   }
   h1, h2, h3 {
-    @apply font-display tracking-tight;
+    @apply font-display tracking-tight text-ink;
   }
   :focus-visible {
-    @apply outline-2 outline-offset-2 outline-moss;
+    @apply outline-2 outline-offset-2 outline-brand-600 rounded-sm;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      transition-duration: 0.01ms !important;
+      animation-duration: 0.01ms !important;
+    }
   }
 }

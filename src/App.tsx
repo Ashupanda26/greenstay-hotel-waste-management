@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import AppLayout from './components/layout/AppLayout'
 import { paths } from './routes/paths'
@@ -9,7 +10,10 @@ import MyRequestsPage from './pages/staff/MyRequestsPage'
 import RequestDetailsPage from './pages/shared/RequestDetailsPage'
 import ManagerDashboardPage from './pages/manager/ManagerDashboardPage'
 import RequestManagementPage from './pages/manager/RequestManagementPage'
-import AnalyticsPage from './pages/manager/AnalyticsPage'
+import StateMessage from './components/ui/StateMessage'
+
+// Loaded only when opened, so the charting library isn't in the main bundle.
+const AnalyticsPage = lazy(() => import('./pages/manager/AnalyticsPage'))
 
 const router = createBrowserRouter([
   {
@@ -27,7 +31,14 @@ const router = createBrowserRouter([
       { path: paths.manager.dashboard, element: <ManagerDashboardPage /> },
       { path: paths.manager.requests, element: <RequestManagementPage /> },
       { path: `${paths.manager.requests}/:requestId`, element: <RequestDetailsPage /> },
-      { path: paths.manager.analytics, element: <AnalyticsPage /> },
+      {
+        path: paths.manager.analytics,
+        element: (
+          <Suspense fallback={<StateMessage kind="loading" title="Loading analytics…" />}>
+            <AnalyticsPage />
+          </Suspense>
+        ),
+      },
 
       { path: '*', element: <NotFoundPage /> },
     ],
