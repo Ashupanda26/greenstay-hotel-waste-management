@@ -6,6 +6,10 @@ Hotel staff report full bins, the system sets a priority from the bin fill level
 
 **Stack:** React, TypeScript, Vite, Tailwind CSS v4, React Router, Supabase (PostgreSQL) and Recharts.
 
+## Portfolio Focus
+
+GreenStay demonstrates business analysis, requirements modelling, workflow design, data reporting, and operational decision support through a fictional hotel waste-management scenario.
+
 ## How GreenStay works
 
 ```
